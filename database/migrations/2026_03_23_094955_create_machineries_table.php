@@ -14,7 +14,6 @@
                 $table->foreignId('owner_id')->constrained('machinery_owners')->cascadeOnDelete();
 
                 $table->string('plate_number_or_name'); // رقم اللوحة أو اسم الآلية
-                $table->string('type')->nullable();
                 $table->string('status')->default('available'); // حالة الآلية (available, busy, maintenance)
                 $table->string('cost_type')->nullable(); // نوع التكلفة الافتراضي (trip, weight, hour, day)
 
