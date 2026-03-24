@@ -36,18 +36,6 @@ class UserSeeder extends Seeder
         $adminUser->assignRole('Admin');
 
 
-        // 3. إنشاء مستخدم Data Entry (مدخل بيانات)
-        $dataEntryUser = User::create([
-            'full_name' => 'Data Entry User',
-            'username' => 'dataentry', // username فريد
-            'email' => 'dataentry@app.com',
-            'password' => bcrypt('12345678'),
-            'email_verified_at' => now(),
-        ]);
-        // تعيين دور "Data Entry" الصحيح
-        $dataEntryUser->assignRole('Data Entry');
-
-
         // 4. إنشاء مستخدم Auditor (مراجع)
         $auditorUser = User::create([
             'full_name' => 'Auditor User',
