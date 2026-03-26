@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo; // أضفنا هذا
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
@@ -13,10 +14,19 @@ class Supplier extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'user_id', // أضفنا هذا الحقل
         'name',
         'phone',
         'current_balance',
     ];
+
+    /**
+     * علاقة المورد بحساب المستخدم (لتسجيل الدخول)
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * علاقة المورد بأوامر التشغيل (أذونات الخروج)
@@ -34,10 +44,8 @@ class Supplier extends Model
         return $this->morphMany(FinancialTransaction::class, 'related_entity');
     }
 
-
-
     public function messages(): MorphMany
-{
-    return $this->morphMany(Message::class, 'messageable');
-}
+    {
+        return $this->morphMany(Message::class, 'messageable');
+    }
 }

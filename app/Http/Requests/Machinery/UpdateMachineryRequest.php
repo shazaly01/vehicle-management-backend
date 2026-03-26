@@ -15,6 +15,7 @@ class UpdateMachineryRequest extends FormRequest
     {
         return [
             'owner_id' => ['sometimes', 'required', 'exists:machinery_owners,id'],
+            'driver_id' => ['required', 'exists:drivers,id'],
             'plate_number_or_name' => ['sometimes', 'required', 'string', 'max:255'],
             'type' => ['required', 'string', 'max:100'],
             'status' => ['nullable', 'string', 'in:available,busy,maintenance'],

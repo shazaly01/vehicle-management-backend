@@ -17,6 +17,7 @@ class MachineryResource extends JsonResource
         return [
             'id' => $this->id,
             'owner_id' => $this->owner_id,
+            'driver_id' => $this->driver_id,
             'plate_number_or_name' => $this->plate_number_or_name,
             'status' => $this->status,
             'type' => $this->type,

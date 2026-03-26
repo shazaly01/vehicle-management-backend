@@ -41,6 +41,7 @@ class PermissionSeeder extends Seeder
 
             // العمليات التشغيلية
             'dispatch_order.view', 'dispatch_order.create', 'dispatch_order.update', 'dispatch_order.delete',
+            'dispatch_order_trip.update_status',
             'financial_transaction.view', 'financial_transaction.create', 'financial_transaction.update', 'financial_transaction.delete',
 
             // إدارة المستندات (التي تم إضافتها مؤخراً)
@@ -112,5 +113,14 @@ class PermissionSeeder extends Seeder
             'dispatch_order.view',
             'financial_transaction.view',
         ]);
+
+
+
+        $supplierRole = Role::firstOrCreate(['name' => 'Supplier', 'guard_name' => $guardName]);
+$supplierRole->syncPermissions([
+    'dashboard.view',
+    'dispatch_order_trip.update_status',   // الصلاحية الأهم: لضغط زر "تأكيد التحميل"
+    'document.view',                       // ليرى المستندات الخاصة به
+]);
     }
 }

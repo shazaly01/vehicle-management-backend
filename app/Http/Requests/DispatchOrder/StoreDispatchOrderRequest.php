@@ -14,25 +14,34 @@ class StoreDispatchOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // رقم الإذن: مطلوب، رقمي، لا يتجاوز 18 خانة (ليتوافق مع DECIMAL(18,0))، وفريد
-            'order_no' => ['required', 'numeric', 'digits_between:1,18', 'unique:dispatch_orders,order_no'],
-
-            'machinery_id' => ['required', 'exists:machineries,id'],
-            'driver_id' => ['required', 'exists:drivers,id'],
+            // بيانات العقد الرئيسي
             'supplier_id' => ['nullable', 'exists:suppliers,id'],
-            'project_id' => ['nullable', 'exists:projects,id'],
-
+            'project_id' => ['required', 'exists:projects,id'],
             'operation_type' => ['required', 'string', 'max:255'],
-            'pricing_type' => ['required', 'string', 'in:trip,weight,hour,day'],
+            'target_quantity' => ['required', 'numeric', 'min:0'],
+            'material_unit_price' => ['required', 'numeric', 'min:0'],
+            'status' => ['nullable', 'string', 'in:active,completed,canceled'],
 
-            'quantity' => ['required', 'numeric', 'min:0'],
-            'unit_price' => ['required', 'numeric', 'min:0'],
-            'total_cost' => ['required', 'numeric', 'min:0'],
+            // --- التعديل الجوهري لدعم "الحشر" ---
+            // نتحقق أن trips هي مصفوفة (Array)
+            'trips' => ['nullable', 'array'],
+            // نتحقق من محتويات كل شاحنة داخل المصفوفة
+            'trips.*.machinery_id' => ['required_with:trips', 'exists:machineries,id'],
+            'trips.*.quantity' => ['required_with:trips', 'numeric', 'min:0.1'],
+            'trips.*.status' => ['nullable', 'string', 'in:dispatched,loaded,delivered'],
+        ];
+    }
 
-            'shipped_material_note' => ['nullable', 'string', 'max:500'],
-            'shipped_material_value' => ['nullable', 'numeric', 'min:0'],
-
-            'status' => ['nullable', 'string', 'in:pending,active,completed,canceled'],
+    /**
+     * تخصيص أسماء الحقول لتظهر أخطاء مفهومة بالعربية
+     */
+    public function attributes(): array
+    {
+        return [
+            'trips.*.machinery_id' => 'الآلية في قائمة الشاحنات',
+            'trips.*.quantity' => 'الكمية لكل شاحنة',
+            'project_id' => 'المشروع',
+            'target_quantity' => 'الكمية المستهدفة',
         ];
     }
 }

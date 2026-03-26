@@ -11,11 +11,13 @@ class SupplierResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'user_id' => $this->user_id, // أضفنا هذا
             'name' => $this->name,
             'phone' => $this->phone,
             'current_balance' => (float) $this->current_balance,
 
             // العلاقات
+            'user' => new UserResource($this->whenLoaded('user')), // أضفنا هذا (تأكد من وجود UserResource)
             'dispatch_orders' => DispatchOrderResource::collection($this->whenLoaded('dispatchOrders')),
             'financial_transactions' => FinancialTransactionResource::collection($this->whenLoaded('financialTransactions')),
 

@@ -45,4 +45,9 @@ public function messages(): MorphMany
 {
     return $this->morphMany(Message::class, 'messageable');
 }
+
+public function machineries(): HasMany
+    {
+        return $this->hasMany(Machinery::class, 'driver_id');
+    }
 }

@@ -20,8 +20,7 @@ class StoreDriverRequest extends FormRequest
 
             // التعديل هنا: استبدال numeric بـ string
             // digits_between ستضمن أن النص المدخل عبارة عن أرقام فقط (بدون فواصل أو أحرف)
-            'emp_code' => ['required', 'string', 'digits_between:9,18', 'unique:drivers,emp_code'],
-
+'emp_code' => ['nullable', 'numeric', 'digits_between:9,18', 'unique:drivers,emp_code'],
             'phone' => ['nullable', 'string', 'max:20'],
         ];
     }
@@ -33,7 +32,6 @@ class StoreDriverRequest extends FormRequest
     {
         return [
             'name.required' => 'اسم السائق مطلوب.',
-            'emp_code.required' => 'كود الموظف مطلوب.',
             'emp_code.digits_between' => 'كود الموظف يجب أن يتكون من 9 إلى 18 رقماً.',
             'emp_code.unique' => 'كود الموظف هذا مسجل مسبقاً لسائق آخر.',
         ];

@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\TreasuryController;
 use App\Http\Controllers\Api\MachineryController;
 use App\Http\Controllers\Api\DispatchOrderController;
+use App\Http\Controllers\Api\DispatchOrderTripController;
 use App\Http\Controllers\Api\FinancialTransactionController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\MessageController;
@@ -102,6 +103,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('treasuries', TreasuryController::class);
     Route::apiResource('machineries', MachineryController::class);
     Route::apiResource('dispatch_orders', DispatchOrderController::class);
+    // مسار مخصص لتحديث حالة الحركة (دورة الاعتماد: تحميل، استلام)
+    Route::patch('dispatch_order_trips/{dispatchOrderTrip}/status', [DispatchOrderTripController::class, 'updateStatus']);
+
+    // المسارات الأساسية للحركات (إنشاء، عرض، حذف)
+    Route::apiResource('dispatch_order_trips', DispatchOrderTripController::class);
     Route::apiResource('financial_transactions', FinancialTransactionController::class);
     Route::apiResource('documents', DocumentController::class)->except(['update', 'show']);
 

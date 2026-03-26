@@ -14,16 +14,25 @@ class DispatchOrderPolicy
         return $user->can('dispatch_order.view');
     }
 
-    public function view(User $user, DispatchOrder $dispatchOrder): bool
+   public function view(User $user, DispatchOrder $dispatchOrder): bool
     {
-        // إذا كان المستخدم صاحب آلية، نتحقق من أن هذا الإذن يخص إحدى آلياته
+        // 1. إذا كان المستخدم "صاحب آلية" (المنطق القديم مع تحسين بسيط)
         if ($user->hasRole('Machinery Owner')) {
-            $owner = MachineryOwner::where('user_id', $user->id)->first();
-            // نتحقق من وجود المالك، وأن الآلية المذكورة في الإذن تعود ملكيتها له
-            return $owner && $owner->id === $dispatchOrder->machinery->owner_id;
+            // يتحقق ما إذا كان لديه أي رحلة (Trip) داخل هذا الأمر تخص آلياته
+            return $dispatchOrder->trips()->whereHas('machinery', function ($q) use ($user) {
+                $q->where('owner_id', $user->machineryOwner?->id);
+            })->exists();
         }
 
-        // لبقية الأدوار (مدير، مشرف، محاسب)
+        // 2. [الإضافة الجديدة] إذا كان المستخدم "مورد" (Supplier)
+        if ($user->hasRole('Supplier')) {
+            // المورد يرى الإذن فقط إذا كان هو المورد المسجل في رأس الطلب
+            // نفترض أن علاقة supplier موجودة في موديل User أو نجلبها عبر ID
+            $supplier = \App\Models\Supplier::where('user_id', $user->id)->first();
+            return $supplier && $dispatchOrder->supplier_id === $supplier->id;
+        }
+
+        // لبقية الأدوار الإدارية (مدير، مشرف، محاسب)
         return $user->can('dispatch_order.view');
     }
 

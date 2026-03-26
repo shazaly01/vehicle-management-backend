@@ -18,7 +18,7 @@ class UpdateDriverRequest extends FormRequest
 
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
-            'emp_code' => ['sometimes', 'required', 'numeric', 'digits_between:9,18', 'unique:drivers,emp_code,' . $driverId],
+            'emp_code' => ['nullable', 'numeric', 'digits_between:9,18', 'unique:drivers,emp_code,' . $driverId],
             'phone' => ['nullable', 'string', 'max:20'],
         ];
     }

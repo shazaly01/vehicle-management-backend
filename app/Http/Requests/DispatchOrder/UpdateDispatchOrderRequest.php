@@ -13,28 +13,28 @@ class UpdateDispatchOrderRequest extends FormRequest
 
     public function rules(): array
     {
-        // استخراج الـ ID لاستثنائه من قاعدة unique
-        $dispatchOrderId = $this->route('dispatch_order') ? $this->route('dispatch_order')->id : null;
-
         return [
-            'order_no' => ['sometimes', 'required', 'numeric', 'digits_between:1,18', 'unique:dispatch_orders,order_no,' . $dispatchOrderId],
-
-            'machinery_id' => ['sometimes', 'required', 'exists:machineries,id'],
-            'driver_id' => ['sometimes', 'required', 'exists:drivers,id'],
             'supplier_id' => ['nullable', 'exists:suppliers,id'],
             'project_id' => ['nullable', 'exists:projects,id'],
-
             'operation_type' => ['sometimes', 'required', 'string', 'max:255'],
-            'pricing_type' => ['sometimes', 'required', 'string', 'in:trip,weight,hour,day'],
+            'target_quantity' => ['sometimes', 'required', 'numeric', 'min:0'],
+            'material_unit_price' => ['sometimes', 'required', 'numeric', 'min:0'],
+            'status' => ['nullable', 'string', 'in:active,completed,canceled'],
 
-            'quantity' => ['sometimes', 'required', 'numeric', 'min:0'],
-            'unit_price' => ['sometimes', 'required', 'numeric', 'min:0'],
-            'total_cost' => ['sometimes', 'required', 'numeric', 'min:0'],
+            // السماح بتحديث قائمة الشاحنات (Trips) أثناء تعديل الأمر
+            'trips' => ['nullable', 'array'],
+            'trips.*.id' => ['nullable', 'exists:dispatch_order_trips,id'], // للتعرف على الحركات الموجودة مسبقاً
+            'trips.*.machinery_id' => ['required_with:trips', 'exists:machineries,id'],
+            'trips.*.quantity' => ['required_with:trips', 'numeric', 'min:0.1'],
+            'trips.*.status' => ['nullable', 'string', 'in:dispatched,loaded,delivered'],
+        ];
+    }
 
-            'shipped_material_note' => ['nullable', 'string', 'max:500'],
-            'shipped_material_value' => ['nullable', 'numeric', 'min:0'],
-
-            'status' => ['nullable', 'string', 'in:pending,active,completed,canceled'],
+    public function attributes(): array
+    {
+        return [
+            'trips.*.machinery_id' => 'الآلية المختارة',
+            'trips.*.quantity' => 'كمية الحركة',
         ];
     }
 }

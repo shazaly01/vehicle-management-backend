@@ -7,41 +7,41 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class DispatchOrderResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
+        // 1. مصفوفة ترجمة أنواع العمليات (أضف الأنواع الموجودة في قاعدة بياناتك)
+        $operationTypeLabels = [
+            'supply'    => 'عملية توريد',
+            'transport' => 'عملية نقل',
+            'internal'  => 'تشغيل داخلي',
+        ];
+
         return [
             'id' => $this->id,
-            // تحويل الرقم الطويل إلى نص للحفاظ على الدقة
             'order_no' => (string) $this->order_no,
 
-            'machinery_id' => $this->machinery_id,
-            'driver_id' => $this->driver_id,
+            // 2. نوع العملية (الكود + المسمى العربي)
+            'operation_type' => $this->operation_type,
+            'operation_type_label' => $operationTypeLabels[$this->operation_type] ?? $this->operation_type,
+
+            // 3. جلب الأسماء مباشرة للسهولة (اختياري لكنه مفيد جداً للـ Vue)
+            // نستخدم ?-> لضمان عدم حدوث خطأ إذا كانت العلاقة فارغة
+            'supplier_name' => $this->supplier?->name ?? 'غير محدد',
+            'project_name'  => $this->project?->name ?? 'غير محدد',
+
             'supplier_id' => $this->supplier_id,
             'project_id' => $this->project_id,
 
-            'operation_type' => $this->operation_type,
-            'pricing_type' => $this->pricing_type,
-
-            // تحويل القيم المالية والكميات إلى أرقام عشرية
-            'quantity' => (float) $this->quantity,
-            'unit_price' => (float) $this->unit_price,
-            'total_cost' => (float) $this->total_cost,
-
-            'shipped_material_note' => $this->shipped_material_note,
-            'shipped_material_value' => $this->shipped_material_value ? (float) $this->shipped_material_value : 0,
+            'target_quantity' => (float) $this->target_quantity,
+            'material_unit_price' => (float) $this->material_unit_price,
 
             'status' => $this->status,
 
-            // العلاقات
-            'machinery' => new MachineryResource($this->whenLoaded('machinery')),
-            'driver' => new DriverResource($this->whenLoaded('driver')),
+            // 4. العلاقات الكاملة (تُحمل فقط عند الحاجة باستخدام whenLoaded)
             'supplier' => new SupplierResource($this->whenLoaded('supplier')),
-            'project' => new ProjectResource($this->whenLoaded('project')),
+            'project'  => new ProjectResource($this->whenLoaded('project')),
+
+            'trips' => DispatchOrderTripResource::collection($this->whenLoaded('trips')),
 
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),

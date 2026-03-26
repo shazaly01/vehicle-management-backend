@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DispatchOrder extends Model
 {
@@ -13,60 +14,58 @@ class DispatchOrder extends Model
 
     protected $fillable = [
         'order_no',
-        'machinery_id',
-        'driver_id',
         'supplier_id',
         'project_id',
         'operation_type',
-        'pricing_type',
-        'quantity',
-        'unit_price',
-        'total_cost',
-        'shipped_material_note',
-        'shipped_material_value',
+        'target_quantity',
+        'material_unit_price',
         'status',
     ];
 
-    /**
-     * تحديد نوع البيانات للحقول لضمان الدقة
-     */
     protected $casts = [
-        'order_no' => 'string', // للحفاظ على دقة الـ 18 رقماً
-        'quantity' => 'decimal:2',
-        'unit_price' => 'decimal:2',
-        'total_cost' => 'decimal:2',
-        'shipped_material_value' => 'decimal:2',
+        // نحتفظ به كنص في لارافيل لمنع تحويله لـ Scientific Notation، رغم أنه في الداتا بيز Decimal
+        'order_no' => 'string',
+        'target_quantity' => 'decimal:2',
+        'material_unit_price' => 'decimal:2',
     ];
 
     /**
-     * علاقة إذن الخروج بالآلية المستخدمة
+     * توليد order_no أوتوماتيكياً عند الإنشاء
      */
-    public function machinery(): BelongsTo
-    {
-        return $this->belongsTo(Machinery::class);
-    }
+protected static function boot()
+{
+    parent::boot();
 
-    /**
-     * علاقة إذن الخروج بالسائق المنفذ
-     */
-    public function driver(): BelongsTo
-    {
-        return $this->belongsTo(Driver::class);
-    }
+    static::creating(function ($model) {
+        if (empty($model->order_no)) {
+            // 1. جلب آخر رقم تم تسجيله في النظام
+            $latestOrder = static::latest('id')->first();
 
-    /**
-     * علاقة إذن الخروج بالمورد (اختياري)
-     */
+            // 2. إذا كان هناك طلب سابق، نزيد الرقم واحد، وإذا لم يوجد نبدأ من 1
+            // قمنا باستخدام الـ ID لضمان عدم التكرار وسهولة التسلسل
+            $nextSequence = $latestOrder ? ($latestOrder->id + 1) : 1;
+
+            // 3. تركيب السيريال: (سنة 26) + (رقم متسلسل من 4 خانات)
+            // النتيجة ستكون مثلاً: 260001، 260002، وهكذا...
+            $model->order_no = date('y') . str_pad($nextSequence, 4, '0', STR_PAD_LEFT);
+        }
+    });
+}
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
     }
 
-    /**
-     * علاقة إذن الخروج بالمشروع (اختياري)
-     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * علاقة الأمر الرئيسي بالحركات/النقلات التابعة له
+     */
+    public function trips(): HasMany
+    {
+        return $this->hasMany(DispatchOrderTrip::class);
     }
 }

@@ -15,6 +15,7 @@ class Machinery extends Model
 
     protected $fillable = [
         'owner_id',
+        'driver_id',
         'plate_number_or_name',
         'type',
         'status',
@@ -42,4 +43,9 @@ class Machinery extends Model
 {
     return $this->morphMany(\App\Models\Document::class, 'documentable');
 }
+
+public function driver(): BelongsTo
+    {
+        return $this->belongsTo(Driver::class, 'driver_id');
+    }
 }
